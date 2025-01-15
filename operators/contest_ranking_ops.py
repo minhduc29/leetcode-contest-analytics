@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 from utils.queries import contest_ranking_query
-from utils.constants import URL, OUTPUT_PATH
+from utils.constants import URL, OUTPUT_PATH, BUCKET_NAME
 
 
 def extract_contest_ranking(num_pages):
@@ -13,7 +13,8 @@ def extract_contest_ranking(num_pages):
         # Get response for each page
         response = requests.post(URL, json=contest_ranking_query(i + 1)).json()["data"]["globalRanking"]["rankingNodes"]
         responses.extend(response)
-    output_path = f"{OUTPUT_PATH}/raw/sample_contest_ranking.csv"  # Local file path for sample output data
+    # output_path = f"{OUTPUT_PATH}/raw/sample_contest_ranking.csv"  # Local file path for sample output data
+    output_path = f"s3://{BUCKET_NAME}/raw_contest_ranking.csv"  # Amazon S3 storage path
     pd.DataFrame(responses).to_csv(output_path, index=False)
     return output_path
 

@@ -1,6 +1,7 @@
 .idea
 .venv
 __pycache__
+config
 logs
 airflow*
 webserver_config.py

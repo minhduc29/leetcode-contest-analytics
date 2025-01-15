@@ -23,14 +23,30 @@ dag = DAG(
     catchup=False
 )
 
+"""
+Approach 1: ETL pipeline
+- Extract raw data
+- Load into local storage/Amazon S3 (Optional)
+- Transform locally with pandas
+- Reload into local storage/Amazon S3
+- Load from S3 to Amazon Redshift
+
+Approach 2: ELT pipeline
+- Extract raw data
+- Load into Amazon S3
+- Transform with AWS Glue
+- Load the transformed data to Amazon Redshift
+"""
+
 # Extract raw data directly from API and store in local/cloud storage
 extract = PythonOperator(
     task_id="extract_contest_ranking",
     python_callable=extract_contest_ranking,
-    op_args=[4],
+    op_args=[2],
     dag=dag
 )
 
+# Approach 1: Transform the data and reload into local/cloud storage
 transform = PythonOperator(
     task_id="transform_contest_ranking",
     python_callable=transform_contest_ranking,
@@ -38,3 +54,5 @@ transform = PythonOperator(
 )
 
 extract >> transform
+
+# Approach 2 is done with AWS
