@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # Fix ModuleNotFoundError
 
-from operators.contest_ranking_ops import extract_contest_ranking
+from operators.contest_ranking_ops import extract_contest_ranking, transform_contest_ranking
 
 default_args = {
     "owner": "minhduc29",
@@ -25,8 +25,16 @@ dag = DAG(
 
 # Extract raw data directly from API and store in local/cloud storage
 extract = PythonOperator(
-    task_id=f"extract_contest_ranking",
+    task_id="extract_contest_ranking",
     python_callable=extract_contest_ranking,
     op_args=[4],
     dag=dag
 )
+
+transform = PythonOperator(
+    task_id="transform_contest_ranking",
+    python_callable=transform_contest_ranking,
+    dag=dag
+)
+
+extract >> transform
