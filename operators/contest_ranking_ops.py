@@ -34,7 +34,7 @@ def transform_contest_ranking(task_instance):
     df["country"] = df["user"].apply(lambda x: x["profile"]["countryName"])
 
     df.loc[df["dataRegion"] == "CN", "country"] = "China"  # Fill country for CN users
-    df["country"] = df["country"].fillna("Unknown")
+    df["country"] = df["country"].replace({None: "Unknown", "": "Unknown"})
     df = df.drop(columns=["ranking", "user", "dataRegion"])  # Unnecessary columns
     df = df.rename(columns={  # Rename columns for readability
         "currentRating": "rating",
