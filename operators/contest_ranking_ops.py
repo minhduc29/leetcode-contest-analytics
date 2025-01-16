@@ -42,6 +42,7 @@ def transform_contest_ranking(task_instance):
         "currentGlobalRanking": "global_ranking",
     })
 
-    output_path = f"{OUTPUT_PATH}/processed/sample_contest_ranking.csv"
+    # output_path = f"{OUTPUT_PATH}/processed/sample_contest_ranking.csv"
+    output_path = f"s3://{BUCKET_NAME}/processed/contest_ranking.csv"  # Amazon S3 storage path
     df.to_csv(output_path, index=False)
     return output_path
