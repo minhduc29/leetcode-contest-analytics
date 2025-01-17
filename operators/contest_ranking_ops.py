@@ -1,18 +1,31 @@
 import ast
+import logging
 import pandas as pd
 import requests
+from airflow.exceptions import AirflowFailException
 
 from utils.queries import contest_ranking_query
-from utils.constants import URL, OUTPUT_PATH, BUCKET_NAME
+from utils.constants import URL, OUTPUT_PATH, BUCKET_NAME, MAX_ATTEMPTS
 
 
 def extract_contest_ranking(num_pages):
     """Extracts raw data in all pages"""
     responses = []
     for i in range(num_pages):
-        # Get response for each page
-        response = requests.post(URL, json=contest_ranking_query(i + 1)).json()["data"]["globalRanking"]["rankingNodes"]
-        responses.extend(response)
+        attempt = 0
+        while attempt < MAX_ATTEMPTS:
+            try:
+                # Get response for each page
+                response = requests.post(URL, json=contest_ranking_query(i + 1)).json()["data"]["globalRanking"]["rankingNodes"]
+                responses.extend(response)
+                break
+            except Exception as e:
+                logger = logging.getLogger("airflow.task")
+                logger.error(e)
+                logger.error(f"Attempt {attempt + 1} failed at page: {i + 1}")
+                attempt += 1
+        else:
+            raise AirflowFailException
     # output_path = f"{OUTPUT_PATH}/raw/sample_contest_ranking.csv"  # Local file path for sample output data
     output_path = f"s3://{BUCKET_NAME}/raw/contest_ranking.csv"  # Amazon S3 storage path
     pd.DataFrame(responses).to_csv(output_path, index=False)
